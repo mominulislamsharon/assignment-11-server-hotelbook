@@ -30,6 +30,7 @@ async function run() {
 
 
     const hotelCollection = client.db('hotelBook').collection('room');
+    const bookingCollection = client.db('hotelBook').collection('bookings');
 
     app.get('/room', async(req, res) => {
         const cursor = hotelCollection.find();
@@ -47,6 +48,15 @@ async function run() {
 
         const result = await hotelCollection.findOne(query, options);
         res.send(result);
+    })
+
+    // booking
+    app.post('/booking', async(req, res) => {
+        const booking = req.body;
+        console.log(booking);
+        const result = await bookingCollection.insertOne(booking);
+        res.send(result);
+        
     })
 
 
