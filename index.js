@@ -74,6 +74,12 @@ async function run() {
       const query = {_id: new ObjectId(id)}
       const result = await bookingCollection.deleteOne(query);
       res.send(result)
+    });
+
+    app.patch('/booking/:id', async(req, res) => {
+      const upadatedBooking = req.body;
+      console.log(upadatedBooking);
+
     })
 
 
