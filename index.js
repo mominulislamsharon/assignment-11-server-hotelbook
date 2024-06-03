@@ -29,6 +29,26 @@ const client = new MongoClient(uri, {
   }
 });
 
+// middleware  self
+const logger = async(req, res, next) => {
+  console.log( "called",req.host, req.originalUrl)
+  next();
+}
+const verifyToken = async(req, res, next) => {
+  const token = req.cookies?.token;
+  if(!token){
+    return res.status(401).send({message: 'not authorized'})
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if(err){
+      return res.status(401).send({mesage: "unauthorized"})
+    }
+    console.log('value in the token', decoded);
+    req.user = decoded;
+    next()
+  })
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -39,9 +59,8 @@ async function run() {
     const bookingCollection = client.db('hotelBook').collection('bookings');
 
     // auth related api jwt 
-    app.post('/jwt', async(req, res) => {
+    app.post('/jwt', logger, async(req, res) => {
       const user = req.body;
-      console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
       res
       .cookie('token', token, {
@@ -52,7 +71,7 @@ async function run() {
     })
 
     // room related api 
-    app.get('/room', async(req, res) => {
+    app.get('/room', logger, async(req, res) => {
         const cursor = hotelCollection.find();
         const result = await cursor.toArray();
         res.send(result);
@@ -73,14 +92,12 @@ async function run() {
     // booking api
     app.post('/booking', async(req, res) => {
         const booking = req.body;
-        console.log(booking);
         const result = await bookingCollection.insertOne(booking);
         res.send(result);
         
     });
 
-    app.get('/booking', async(req, res) => {
-      console.log(req.query.email);
+    app.get('/booking', logger, verifyToken, async(req, res) => {
       let query = {};
       if(req.query?.email){
         query = {email: req.query.email}
