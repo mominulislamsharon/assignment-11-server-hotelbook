@@ -43,7 +43,6 @@ const verifyToken = async(req, res, next) => {
     if(err){
       return res.status(401).send({mesage: "unauthorized"})
     }
-    console.log('value in the token', decoded);
     req.user = decoded;
     next()
   })
@@ -97,8 +96,8 @@ async function run() {
         
     });
 
-    app.get('/booking', logger, verifyToken, async(req, res) => {
-      let query = {};
+    app.get('/booking/:email',  async(req, res) => {
+      let query = {email: req.params.email};
       if(req.query?.email){
         query = {email: req.query.email}
       }
@@ -108,16 +107,28 @@ async function run() {
 
     app.delete('/booking/:id', async(req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
-      const result = await bookingCollection.deleteOne(query);
+      const email = req.query.email;
+      const result = await bookingCollection.deleteOne({_id: new ObjectId(id), email});
       res.send(result)
     });
 
-    app.patch('/booking/:id', async(req, res) => {
-      const upadatedBooking = req.body;
-      console.log(upadatedBooking);
+
+    app.get('/booking-update/:id', async(req, res) => {
+      const result = await bookingCollection.findOne({_id: new ObjectId(req.params.id)})
+      res.send(result);
 
     })
+
+    app.patch('/booking/:id', async(req, res) => {
+      const id = req.params.id;
+      const updatedBooking = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+          $set: updatedBooking,
+      };
+      const result = await bookingCollection.updateOne(query, updateDoc);
+      res.send(result);
+  });
 
 
 
