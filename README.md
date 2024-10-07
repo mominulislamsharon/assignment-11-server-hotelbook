@@ -20,5 +20,5 @@ Backend server for the Hotel Booking application, built with Node.js and Express
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/hotel-booking-server.git
+   git clone https://github.com/mominulislamsharon/hotel-booking-server.git
    cd hotel-booking-server
